@@ -59,7 +59,7 @@ class Permission:
 
         for role in user.roles:
             if role.name in roles_set and role.name in permissions:
-                if set(role.permissions) ^ permissions[role.name]:
+                if permissions[role.name] - set(role.permissions):
                     return False
 
         return True
