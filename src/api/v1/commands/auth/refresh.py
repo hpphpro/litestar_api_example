@@ -22,7 +22,7 @@ class RefreshCommand(Command[dto.Fingerprint, tuple[datetime, dto.Token, dto.Tok
         self,
         manager: DatabaseManager,
         jwt: JWT[tuple[datetime, dto.Token], dto.TokenPayload],
-        cache: Cache,
+        cache: Cache[str, str],
     ) -> None:
         self._manager = manager
         self._jwt = jwt
@@ -60,7 +60,7 @@ class RefreshCommand(Command[dto.Fingerprint, tuple[datetime, dto.Token, dto.Tok
                     "Unauthorized", detail="Current token is not valid anymore"
                 )
 
-            await self._cache.remove_from_list(user_id, verified)
+            await self._cache.pop(user_id, verified)
 
             expire, refresh = self._jwt.encode(typ="refresh", sub=user_id)
             _, access = self._jwt.encode(typ="access", sub=user_id)

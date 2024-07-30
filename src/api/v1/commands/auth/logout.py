@@ -22,7 +22,7 @@ class LogoutCommand(Command[dto.Token, dto.Status]):
         self,
         manager: DatabaseManager,
         jwt: JWT[tuple[datetime, dto.Token], dto.TokenPayload],
-        cache: Cache,
+        cache: Cache[str, str],
     ) -> None:
         self._manager = manager
         self._jwt = jwt
@@ -45,7 +45,7 @@ class LogoutCommand(Command[dto.Token, dto.Status]):
             for pair in token_pairs:
                 _, _, cached_token = pair.partition("::")
                 if cached_token == token.token:
-                    await self._cache.remove_from_list(user.id.hex, pair)
+                    await self._cache.pop(user.id.hex, pair)
                     break
             else:
                 raise UnAuthorizedError("Invalid token")

@@ -25,7 +25,7 @@ class LoginCommand(Command[dto.UserLogin, tuple[datetime, dto.Token, dto.Token]]
         manager: DatabaseManager,
         jwt: JWT[tuple[datetime, dto.Token], dto.TokenPayload],
         hasher: AbstractHasher,
-        cache: Cache,
+        cache: Cache[str, str],
     ) -> None:
         self._manager = manager
         self._jwt = jwt
@@ -49,6 +49,7 @@ class LoginCommand(Command[dto.UserLogin, tuple[datetime, dto.Token, dto.Token]]
             _, access = self._jwt.encode(typ="access", sub=user_id)
 
             old_tokens = await self._cache.get_list(user_id)
+
             if len(old_tokens) > MAXIMUM_TOKENS_COUNT:
                 await self._cache.del_keys(user_id)
 

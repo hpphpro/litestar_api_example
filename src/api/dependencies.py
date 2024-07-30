@@ -26,7 +26,7 @@ def setup_common_dependencies(app: Litestar, settings: Settings) -> None:
     )
     redis = get_redis(settings.redis)
     app.state.engine = engine
-    app.state.redis = redis._redis
+    app.state.redis = redis
     session_factory = create_session_factory(create_sa_session_factory(engine))
     manager_factory = create_db_manager_factory(session_factory)
     hasher = get_argon2_hasher()
