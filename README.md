@@ -1,6 +1,6 @@
 ## Litestar API Example
 
-A simple example of how to start your development with Lightstar!
+A simple example of how to start your development with Litestar!
 
 
 
