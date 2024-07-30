@@ -1,0 +1,49 @@
+import uuid
+from typing import Any, Sequence
+
+from msgspec import field
+
+from src.common import dto
+from src.database.alchemy.types import OrderByType
+from src.database.alchemy.types.user import LoadsType
+from src.database.manager import DatabaseManager
+from src.interfaces.command import Command
+from src.services.user import UserService
+
+
+class GetUserById(dto.DTO):
+    id: uuid.UUID
+    s: Sequence[LoadsType] = field(default_factory=list)
+
+
+class GetUserCommand(Command[GetUserById, dto.User]):
+    __slots__ = ("_manager",)
+
+    def __init__(self, manager: DatabaseManager) -> None:
+        self._manager = manager
+
+    async def execute(self, query: GetUserById, **kwargs: Any) -> dto.User:
+        async with self._manager:
+            return await UserService(self._manager).get_one(*query.s, id=query.id)
+
+
+class GetManyUsersByOffset(dto.DTO):
+    order_by: OrderByType
+    offset: int | None = None
+    limit: int | None = None
+    s: Sequence[LoadsType] = field(default_factory=list)
+
+
+class GetManyUsersByOffsetCommand(Command[GetManyUsersByOffset, list[dto.User]]):
+    __slots__ = ("_manager",)
+
+    def __init__(self, manager: DatabaseManager) -> None:
+        self._manager = manager
+
+    async def execute(
+        self, query: GetManyUsersByOffset, **kwargs: Any
+    ) -> list[dto.User]:
+        async with self._manager:
+            return await UserService(self._manager).get_many(
+                *query.s, **query.to_dict(exclude={"s"})
+            )

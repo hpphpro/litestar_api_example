@@ -1,0 +1,67 @@
+
+
+services:
+  backend:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    container_name: backend
+    networks:
+      - backend
+    working_dir: /src
+    volumes:
+      - ./:/src/
+    ports:
+      - '9999:8080'
+    depends_on:
+      - postgres
+      - redis
+    command: /bin/sh -c '/wait.sh postgres:5432 && alembic upgrade head && python -m src.defaults && python -OO -m src'
+    healthcheck:
+      test: ["CMD-SHELL", "curl", "-f", "http://localhost:8080/api/v1/healthcheck"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    
+  redis:
+    image: redis:latest
+    restart: always
+    container_name: redis
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    
+  postgres:
+    image: postgres:latest
+    restart: always
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME} || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+  
+
+volumes:
+  postgres_data:
+    name: postgres_data
+
+networks:
+  backend:
+    name: backend
+
+
+

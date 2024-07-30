@@ -1,0 +1,15 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+.mypy_cache/
+.dmypy.json
+dmypy.json
+Dockerfile
+docker-compose.yml
+.dockerignore
+*.tmp
+.ruff_cache/
+.DS_Store
