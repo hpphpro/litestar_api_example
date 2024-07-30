@@ -27,7 +27,7 @@ src/
 git clone git@github.com:hpphpro/litestar_api_example.git
 ```
 ## ENV_FILE
-First of all rename your `.env_example` to `.env`
+First of all rename your `.env.example` to `.env`
 ```
 
 DB_URI=postgresql+asyncpg://{}:{}@{}:{}/{}  # your db driver
