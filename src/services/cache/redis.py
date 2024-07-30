@@ -22,30 +22,29 @@ def _str_key(key: Any) -> str:
 
 
 def _default_converter(v: str | Any, typ: Any) -> Any:
-    match typ:
-        case bytes():
-            return v.encode()
-        case DTO():
-            return msgspec.convert(msgspec.json.decode(v), v)
-        case list():
-            arg = args[0] if (args := get_args(typ)) else None
-            if not arg:
-                raise UnmatchedTypeError(
-                    "Did you forget to set a generic type to your list?"
-                )
-            if isinstance(v, list):
-                return [_default_converter(_v, arg) for _v in v]
+    if issubclass(typ, bytes):
+        return v.encode()
+    elif issubclass(typ, DTO):
+        return msgspec.convert(msgspec.json.decode(v), typ)
+    elif issubclass(typ, list):
+        arg = args[0] if (args := get_args(typ)) else None
+        if not arg:
+            raise UnmatchedTypeError(
+                "Did you forget to set a generic type to your list?"
+            )
+        if isinstance(v, list):
+            return [_default_converter(_v, arg) for _v in v]
 
-            return [_default_converter(v, arg)]
-        case dict():
-            return msgspec.json.decode(v)
-        case _:
-            if not isinstance(v, str):
-                log.warning(
-                    f"Could not convert type {type(v)} to a type {typ}. Types mismatch",
-                    stacklevel=3,
-                )
-            return v
+        return [_default_converter(v, arg)]
+    elif issubclass(typ, dict):
+        return msgspec.json.decode(v)
+    else:
+        if not isinstance(v, str):
+            log.warning(
+                f"Could not convert type {type(v)} to a type {typ}. Types mismatch",
+                stacklevel=3,
+            )
+        return v
 
 
 class RedisCache(Cache[str, str]):
