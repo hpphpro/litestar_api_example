@@ -5,7 +5,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import DeclarativeBase
 
 EntityType = TypeVar("EntityType", bound="Entity")
-IdType = TypeVar("IdType")
 
 
 class Entity(DeclarativeBase):

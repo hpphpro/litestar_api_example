@@ -16,9 +16,7 @@ class UserService(Service):
     __slots__ = ()
 
     @overload
-    async def get_one(
-        self, *_loads: user.LoadsType, id: uuid.UUID
-    ) -> dto.User: ...
+    async def get_one(self, *_loads: user.LoadsType, id: uuid.UUID) -> dto.User: ...
     @overload
     async def get_one(self, *_loads: user.LoadsType, login: str) -> dto.User: ...
     async def get_one(self, *_loads: user.LoadsType, **kw: Any) -> dto.User:
@@ -45,9 +43,7 @@ class UserService(Service):
         return [dto.User.from_mapping(user.as_dict()) for user in users]
 
     @on_error("login", detail="Creation failed")
-    async def create(
-        self, data: dto.UserCreate, hasher: AbstractHasher
-    ) -> dto.User:
+    async def create(self, data: dto.UserCreate, hasher: AbstractHasher) -> dto.User:
         data.password = hasher.hash_password(data.password)
 
         user = await self._manager.send(queries.user.Create(**data.to_dict()))
