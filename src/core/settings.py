@@ -78,7 +78,7 @@ class ServerSettings(BaseSettings):
     cors_origins: list[str] = ["*"]
     cors_expose_headers: list[str] = []
     csrf_secret: str = ""
-    title: str | None = "Test"
+    title: str | None = None
     debug: int = 1
     version: str = "0.0.1"
     host: str = "127.0.0.1"
