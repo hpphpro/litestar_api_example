@@ -44,6 +44,7 @@ def _default_converter(v: str | Any, typ: Any) -> Any:
                 f"Could not convert type {type(v)} to a type {typ}. Types mismatch",
                 stacklevel=3,
             )
+
         return v
 
 

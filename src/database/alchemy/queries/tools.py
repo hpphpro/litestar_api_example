@@ -2,11 +2,7 @@ from collections import deque
 from functools import lru_cache
 from typing import (
     Any,
-    List,
-    Optional,
     ParamSpec,
-    Tuple,
-    Type,
     TypeVar,
 )
 
@@ -21,9 +17,9 @@ R = TypeVar("R")
 
 
 def _bfs_search(
-    start: Type[Entity],
+    start: type[Entity],
     end: str,
-) -> List[RelationshipProperty[Type[Entity]]]:
+) -> list[RelationshipProperty[type[Entity]]]:
     queue = deque([[start]])
     checked = set()
 
@@ -38,7 +34,7 @@ def _bfs_search(
         current_relations = MODELS_RELATIONSHIPS_NODE.get(current_node, [])
 
         for relation in current_relations:
-            new_path: List[Any] = list(path)
+            new_path: list[Any] = list(path)
             new_path.append(relation)
 
             if relation.key == end:
@@ -52,12 +48,12 @@ def _bfs_search(
 
 
 def _construct_loads(
-    relationships: List[RelationshipProperty[Type[Entity]]],
-) -> Optional[Load]:
+    relationships: list[RelationshipProperty[type[Entity]]],
+) -> Load | None:
     if not relationships:
         return None
 
-    load: Optional[Load] = None
+    load: Load | None = None
     for relationship in relationships:
         loader = joinedload if not relationship.uselist else subqueryload
 
@@ -72,8 +68,8 @@ def _construct_loads(
 @lru_cache
 def select_with_relationships(
     *_should_load: str,
-    model: Type[EntityType],
-    query: Optional[Select[Tuple[Type[EntityType]]]] = None,
+    model: type[EntityType],
+    query: Select[tuple[type[EntityType]]] | None = None,
 ) -> Select[Any]:
     if query is None:
         query = select(model)
