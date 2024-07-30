@@ -9,11 +9,13 @@ DIRECTORY STRUCTURE
 
 ```
 
+migrations/ -> your db migrations and rules to make them
+nginx/ -> reverse-proxy configurations
 src/
     api/
         ...
         framework level. There is your versions/endpoints/middlewares/use-cases and so on
-    common/ -> common folder? common! there is like all your project may want at once!
+    common/ -> сommon folder containing shared resources and utilities that might be used across the project
     core/ -> a heart of your project, there is like servers/settings
     database/ -> database layer, here is your storage and rules to work with it
     interfaces/ -> project interfaces
@@ -68,11 +70,13 @@ CIPHER_REFRESH_TOKEN_EXPIRE_SECONDS=604800 # a week, for refresh one.
 ```
 pip install -r requirements.txt
 ```
-Create db and tables. By default db is postgres
+`Create db and tables. By default db is postgres.`
+
+__Project already include initial midgration. If you want to create your own or add a new one:__
 ```
 alembic revision --autogenerate -m 'initial' && alembic upgrade head
 ```
-Start app:
+`Start app:`
 
 for Windows:
 ```

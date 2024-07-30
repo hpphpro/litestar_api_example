@@ -104,7 +104,7 @@ class Delete(BaseQuery[EntityType, R]):
         self.clauses = [self.entity.id == id]
 
     async def execute(self, conn: AsyncSession, **kw: Any) -> R:
-        result = await conn.execute(select(self.entity).where(*self.clauses))
+        result = (await conn.scalars(select(self.entity).where(*self.clauses))).first()
         if result:
             await conn.delete(result)
 

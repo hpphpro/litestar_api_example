@@ -45,7 +45,7 @@ class Update(base.Update[User, Sequence[User]]):
         super().__init__(id=id, **data)
 
 
-class Delete(base.Delete[User, Sequence[User]]):
+class Delete(base.Delete[User, User | None]):
     entity: type[User] = User
     __slots__ = ()
 

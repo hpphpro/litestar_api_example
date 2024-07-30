@@ -73,9 +73,11 @@ class UserService(Service):
     async def delete(self, id: uuid.UUID) -> dto.User:
         await self.ensure_exists(id=id)
 
-        users = await self._manager.send(queries.user.Delete(id=id))
+        user = await self._manager.send(queries.user.Delete(id=id))
+        if not user:
+            raise ConflictError("Couldn't delete user", id=id)
 
-        return dto.User.from_mapping(users[-1].as_dict())
+        return dto.User.from_mapping(user.as_dict())
 
     @overload
     async def ensure_exists(self, *, id: uuid.UUID) -> Literal[True]: ...
