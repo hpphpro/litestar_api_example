@@ -50,7 +50,7 @@ class ChangeUserRole(base.BaseQuery[UserRole, int]):
             self.entity.role_id == old_role_id,
         ]
 
-    async def execute(self, conn: AsyncSession, **kw: Any) -> int:
+    async def execute(self, conn: AsyncSession, /, **kw: Any) -> int:
         result = await conn.execute(
             update(self.entity).where(*self.clauses).values(**self.kw)
         )

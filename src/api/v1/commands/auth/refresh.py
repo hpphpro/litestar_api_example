@@ -5,9 +5,9 @@ from typing import Any
 from src.common import dto
 from src.common.exceptions import UnAuthorizedError
 from src.database.alchemy.queries.user import Get
-from src.database.manager import DatabaseManager
 from src.interfaces.cache import Cache
 from src.interfaces.command import Command
+from src.interfaces.manager import AbstractTransactionManager
 from src.interfaces.token import JWT
 
 
@@ -20,7 +20,7 @@ class RefreshCommand(Command[dto.Fingerprint, tuple[datetime, dto.Token, dto.Tok
 
     def __init__(
         self,
-        manager: DatabaseManager,
+        manager: AbstractTransactionManager,
         jwt: JWT[tuple[datetime, dto.Token], dto.TokenPayload],
         cache: Cache[str, str],
     ) -> None:
@@ -29,7 +29,7 @@ class RefreshCommand(Command[dto.Fingerprint, tuple[datetime, dto.Token, dto.Tok
         self._cache = cache
 
     async def execute(
-        self, query: dto.Fingerprint, **kwargs: Any
+        self, query: dto.Fingerprint, /, **kwargs: Any
     ) -> tuple[datetime, dto.Token, dto.Token]:
         return await self._verify_refresh(query.fingerprint, **kwargs)
 

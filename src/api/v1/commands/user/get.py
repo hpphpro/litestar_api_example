@@ -6,8 +6,8 @@ from msgspec import field
 from src.common import dto
 from src.database.alchemy.types import OrderByType
 from src.database.alchemy.types.user import LoadsType
-from src.database.manager import DatabaseManager
 from src.interfaces.command import Command
+from src.interfaces.manager import AbstractTransactionManager
 from src.services.user import UserService
 
 
@@ -19,10 +19,10 @@ class GetUserById(dto.DTO):
 class GetUserCommand(Command[GetUserById, dto.User]):
     __slots__ = ("_manager",)
 
-    def __init__(self, manager: DatabaseManager) -> None:
+    def __init__(self, manager: AbstractTransactionManager) -> None:
         self._manager = manager
 
-    async def execute(self, query: GetUserById, **kwargs: Any) -> dto.User:
+    async def execute(self, query: GetUserById, /, **kwargs: Any) -> dto.User:
         async with self._manager:
             return await UserService(self._manager).get_one(*query.s, id=query.id)
 
@@ -37,11 +37,11 @@ class GetManyUsersByOffset(dto.DTO):
 class GetManyUsersByOffsetCommand(Command[GetManyUsersByOffset, list[dto.User]]):
     __slots__ = ("_manager",)
 
-    def __init__(self, manager: DatabaseManager) -> None:
+    def __init__(self, manager: AbstractTransactionManager) -> None:
         self._manager = manager
 
     async def execute(
-        self, query: GetManyUsersByOffset, **kwargs: Any
+        self, query: GetManyUsersByOffset, /, **kwargs: Any
     ) -> list[dto.User]:
         async with self._manager:
             return await UserService(self._manager).get_many(

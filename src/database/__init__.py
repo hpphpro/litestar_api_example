@@ -1,3 +1,3 @@
-from src.database.manager import DatabaseManager
+from src.database.manager import TransactionManager
 
-__all__ = ("DatabaseManager",)
+__all__ = ("TransactionManager",)

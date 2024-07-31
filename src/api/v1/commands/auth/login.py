@@ -5,10 +5,10 @@ from src.api.common.constants import MAXIMUM_TOKENS_COUNT
 from src.common import dto
 from src.common.exceptions import UnAuthorizedError
 from src.database.alchemy.queries.user import Get
-from src.database.manager import DatabaseManager
 from src.interfaces.cache import Cache
 from src.interfaces.command import Command
 from src.interfaces.hasher import AbstractHasher
+from src.interfaces.manager import AbstractTransactionManager
 from src.interfaces.token import JWT
 
 
@@ -22,7 +22,7 @@ class LoginCommand(Command[dto.UserLogin, tuple[datetime, dto.Token, dto.Token]]
 
     def __init__(
         self,
-        manager: DatabaseManager,
+        manager: AbstractTransactionManager,
         jwt: JWT[tuple[datetime, dto.Token], dto.TokenPayload],
         hasher: AbstractHasher,
         cache: Cache[str, str],
@@ -33,7 +33,7 @@ class LoginCommand(Command[dto.UserLogin, tuple[datetime, dto.Token, dto.Token]]
         self._cache = cache
 
     async def execute(
-        self, query: dto.UserLogin, **kwargs: Any
+        self, query: dto.UserLogin, /, **kwargs: Any
     ) -> tuple[datetime, dto.Token, dto.Token]:
         async with self._manager:
             user = await self._manager(Get(login=query.login))

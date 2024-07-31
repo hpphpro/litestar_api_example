@@ -7,7 +7,7 @@ from src.interfaces.command import Query, R
 from src.interfaces.connection import AbstractAsyncConnection, AbstractAsyncTransaction
 
 
-class DatabaseManager:
+class TransactionManager:
     __slots__ = (
         "conn",
         "_transaction",
@@ -34,7 +34,7 @@ class DatabaseManager:
 
         await self.close_transaction()
 
-    async def __aenter__(self) -> DatabaseManager:
+    async def __aenter__(self) -> TransactionManager:
         await self.conn.start()
         return self
 
@@ -57,8 +57,8 @@ class DatabaseManager:
 
 def create_db_manager_factory(
     conn_factory: Callable[..., AbstractAsyncConnection],
-) -> Callable[[], DatabaseManager]:
-    def _create() -> DatabaseManager:
-        return DatabaseManager(conn=conn_factory())
+) -> Callable[[], TransactionManager]:
+    def _create() -> TransactionManager:
+        return TransactionManager(conn=conn_factory())
 
     return _create

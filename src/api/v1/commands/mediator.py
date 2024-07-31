@@ -9,14 +9,16 @@ class AwaitableProxy(Generic[CommandType, R]):
     __slots__ = (
         "_command",
         "_kw",
+        '_query'
     )
 
-    def __init__(self, command: CommandType, **kw: Any) -> None:
+    def __init__(self, command: CommandType, query: Any, **kw: Any) -> None:
         self._command = command
         self._kw = kw
+        self._query = query
 
     def __await__(self) -> Generator[None, None, R]:
-        result = yield from self._command(**self._kw).__await__()
+        result = yield from self._command(self._query, **self._kw).__await__()
         return cast(R, result)
 
 

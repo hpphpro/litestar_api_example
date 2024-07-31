@@ -2,8 +2,8 @@ import uuid
 from typing import Any
 
 from src.common import dto
-from src.database.manager import DatabaseManager
 from src.interfaces.command import Command
+from src.interfaces.manager import AbstractTransactionManager
 from src.services.user import UserService
 
 
@@ -14,10 +14,10 @@ class DeleteUserById(dto.DTO):
 class DeleteUserByIdCommand(Command[DeleteUserById, dto.User]):
     __slots__ = ("_manager",)
 
-    def __init__(self, manager: DatabaseManager) -> None:
+    def __init__(self, manager: AbstractTransactionManager) -> None:
         self._manager = manager
 
-    async def execute(self, query: DeleteUserById, **kwargs: Any) -> dto.User:
+    async def execute(self, query: DeleteUserById, /, **kwargs: Any) -> dto.User:
         async with self._manager:
             await self._manager.create_transaction()
 

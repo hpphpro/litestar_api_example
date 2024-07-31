@@ -27,7 +27,7 @@ class Get(base.BaseQuery[User, User | None]):
         self._loads = _loads
         self.clauses = [getattr(self.entity, k) == v for k, v in self.kw.items()]
 
-    async def execute(self, conn: AsyncSession, **kw: Any) -> User | None:
+    async def execute(self, conn: AsyncSession, /, **kw: Any) -> User | None:
         stmt = tools.select_with_relationships(*self._loads, model=self.entity).where(
             *self.clauses
         )
@@ -82,7 +82,7 @@ class GetManyByOffset(base.GetManyByOffset[User, Sequence[User]]):
         super().__init__(order_by=order_by, offset=offset, limit=limit)
         self._loads = _loads
 
-    async def execute(self, conn: AsyncSession, **kw: Any) -> Sequence[User]:
+    async def execute(self, conn: AsyncSession, /, **kw: Any) -> Sequence[User]:
         result = (
             await conn.scalars(
                 tools.select_with_relationships(*self._loads, model=self.entity)

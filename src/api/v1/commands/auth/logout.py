@@ -5,9 +5,9 @@ from typing import Any
 from src.common import dto
 from src.common.exceptions import UnAuthorizedError
 from src.database.alchemy.queries.user import Get
-from src.database.manager import DatabaseManager
 from src.interfaces.cache import Cache
 from src.interfaces.command import Command
+from src.interfaces.manager import AbstractTransactionManager
 from src.interfaces.token import JWT
 
 
@@ -20,7 +20,7 @@ class LogoutCommand(Command[dto.Token, dto.Status]):
 
     def __init__(
         self,
-        manager: DatabaseManager,
+        manager: AbstractTransactionManager,
         jwt: JWT[tuple[datetime, dto.Token], dto.TokenPayload],
         cache: Cache[str, str],
     ) -> None:
@@ -28,7 +28,7 @@ class LogoutCommand(Command[dto.Token, dto.Status]):
         self._jwt = jwt
         self._cache = cache
 
-    async def execute(self, query: dto.Token, **kwargs: Any) -> dto.Status:
+    async def execute(self, query: dto.Token, /, **kwargs: Any) -> dto.Status:
         return await self._invalidate_refresh(token=query)
 
     async def _invalidate_refresh(self, token: dto.Token) -> dto.Status:
