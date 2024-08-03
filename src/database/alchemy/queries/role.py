@@ -9,7 +9,7 @@ from src.database.alchemy.entity.role import Role
 from src.database.alchemy.queries import base
 
 
-class Create(base.Create[Role, Role | None]):
+class Create(base.Create[Role]):
     entity: type[Role] = Role
     __slots__ = ()
 
@@ -17,7 +17,7 @@ class Create(base.Create[Role, Role | None]):
         super().__init__(name=name)
 
 
-class Get(base.Get[Role, Role | None]):
+class Get(base.Get[Role]):
     entity: type[Role] = Role
     __slots__ = ()
 
@@ -29,7 +29,7 @@ class Get(base.Get[Role, Role | None]):
         super().__init__(**kw)
 
 
-class SetToUser(base.Create[UserRole, UserRole | None]):
+class SetToUser(base.Create[UserRole]):
     entity: type[UserRole] = UserRole
     __slots__ = ()
 

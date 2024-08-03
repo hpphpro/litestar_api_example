@@ -8,7 +8,7 @@ from src.database.alchemy.queries import base, tools
 from src.database.alchemy.types import OrderByType, user
 
 
-class Create(base.Create[User, User | None]):
+class Create(base.Create[User]):
     entity: type[User] = User
     __slots__ = ()
 
@@ -37,7 +37,7 @@ class Get(base.BaseQuery[User, User | None]):
         return result if result else None
 
 
-class Update(base.Update[User, Sequence[User]]):
+class Update(base.Update[User]):
     entity: type[User] = User
     __slots__ = ()
 
@@ -45,7 +45,7 @@ class Update(base.Update[User, Sequence[User]]):
         super().__init__(id=id, **data)
 
 
-class Delete(base.Delete[User, User | None]):
+class Delete(base.Delete[User]):
     entity: type[User] = User
     __slots__ = ()
 
@@ -56,7 +56,7 @@ class Delete(base.Delete[User, User | None]):
         super().__init__(id=id)
 
 
-class Exist(base.Exist[User, bool]):
+class Exist(base.Exist[User]):
     entity: type[User] = User
     __slots__ = ()
 
@@ -68,7 +68,7 @@ class Exist(base.Exist[User, bool]):
         super().__init__(**kw)
 
 
-class GetManyByOffset(base.GetManyByOffset[User, Sequence[User]]):
+class GetManyByOffset(base.GetManyByOffset[User]):
     entity: type[User] = User
     __slots__ = ("_loads",)
 

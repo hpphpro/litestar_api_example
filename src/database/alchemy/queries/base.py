@@ -1,4 +1,4 @@
-from typing import Any, Generic, cast
+from typing import Any, Generic, Sequence
 
 from sqlalchemy import exists, update
 from sqlalchemy.dialects.postgresql import insert
@@ -18,10 +18,10 @@ class BaseQuery(Query[AsyncSession, R], Generic[EntityType, R]):
         self.kw = kw
 
 
-class Create(BaseQuery[EntityType, R]):
+class Create(BaseQuery[EntityType, EntityType | None]):
     __slots__ = ()
 
-    async def execute(self, conn: AsyncSession, /, **kw: Any) -> R:
+    async def execute(self, conn: AsyncSession, /, **kw: Any) -> EntityType | None:
         result = (
             await conn.scalars(
                 insert(self.entity)
@@ -30,10 +30,10 @@ class Create(BaseQuery[EntityType, R]):
                 .returning(self.entity)
             )
         ).first()
-        return cast(R, result if result else None)
+        return result
 
 
-class GetManyByOffset(BaseQuery[EntityType, R]):
+class GetManyByOffset(BaseQuery[EntityType, Sequence[EntityType]]):
     __slots__ = (
         "offset",
         "limit",
@@ -50,7 +50,7 @@ class GetManyByOffset(BaseQuery[EntityType, R]):
         self.offset = offset
         self.limit = limit
 
-    async def execute(self, conn: AsyncSession, /, **kw: Any) -> R:
+    async def execute(self, conn: AsyncSession, /, **kw: Any) -> Sequence[EntityType]:
         result = (
             await conn.scalars(
                 select(self.entity)
@@ -64,10 +64,10 @@ class GetManyByOffset(BaseQuery[EntityType, R]):
             )
         ).all()
 
-        return cast(R, result)
+        return result
 
 
-class Get(BaseQuery[EntityType, R]):
+class Get(BaseQuery[EntityType, EntityType | None]):
     __slots__ = ("clauses",)
 
     def __init__(self, **kw: Any) -> None:
@@ -75,20 +75,18 @@ class Get(BaseQuery[EntityType, R]):
         super().__init__(**kw)
         self.clauses = [getattr(self.entity, k) == v for k, v in self.kw.items()]
 
-    async def execute(self, conn: AsyncSession, /, **kw: Any) -> R:
-        result = (await conn.scalars(select(self.entity).where(*self.clauses))).first()
-
-        return cast(R, result if result else None)
+    async def execute(self, conn: AsyncSession, /, **kw: Any) -> EntityType | None:
+        return (await conn.scalars(select(self.entity).where(*self.clauses))).first()
 
 
-class Update(BaseQuery[EntityType, R]):
+class Update(BaseQuery[EntityType, Sequence[EntityType]]):
     __slots__ = ("clauses",)
 
     def __init__(self, *, id: Any, **data: Any) -> None:
         super().__init__(**data)
         self.clauses = [self.entity.id == id]
 
-    async def execute(self, conn: AsyncSession, /, **kw: Any) -> R:
+    async def execute(self, conn: AsyncSession, /, **kw: Any) -> Sequence[EntityType]:
         result = (
             await conn.scalars(
                 update(self.entity)
@@ -98,24 +96,24 @@ class Update(BaseQuery[EntityType, R]):
             )
         ).all()
 
-        return cast(R, result)
+        return result
 
 
-class Delete(BaseQuery[EntityType, R]):
+class Delete(BaseQuery[EntityType, EntityType | None]):
     __slots__ = ("clauses",)
 
     def __init__(self, *, id: Any) -> None:
         self.clauses = [self.entity.id == id]
 
-    async def execute(self, conn: AsyncSession, /, **kw: Any) -> R:
+    async def execute(self, conn: AsyncSession, /, **kw: Any) -> EntityType | None:
         result = (await conn.scalars(select(self.entity).where(*self.clauses))).first()
         if result:
             await conn.delete(result)
 
-        return cast(R, result)
+        return result
 
 
-class Exist(BaseQuery[EntityType, R]):
+class Exist(BaseQuery[EntityType, bool]):
     __slots__ = ("clauses",)
 
     def __init__(self, **kw: Any) -> None:
@@ -123,8 +121,8 @@ class Exist(BaseQuery[EntityType, R]):
         super().__init__(**kw)
         self.clauses = [getattr(self.entity, k) == v for k, v in self.kw.items()]
 
-    async def execute(self, conn: AsyncSession, /, **kw: Any) -> R:
+    async def execute(self, conn: AsyncSession, /, **kw: Any) -> bool:
         is_exist = await conn.scalar(
             exists(select(self.entity.id).where(*self.clauses)).select()
         )
-        return cast(R, is_exist)
+        return bool(is_exist)
