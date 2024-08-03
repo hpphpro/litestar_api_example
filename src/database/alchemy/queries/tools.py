@@ -69,8 +69,8 @@ def _construct_loads(
 def select_with_relationships(
     *_should_load: str,
     model: type[EntityType],
-    query: Select[tuple[type[EntityType]]] | None = None,
-) -> Select[Any]:
+    query: Select[tuple[EntityType]] | None = None,
+) -> Select[tuple[EntityType]]:
     if query is None:
         query = select(model)
 
