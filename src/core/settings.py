@@ -36,7 +36,7 @@ class DatabaseSettings(BaseSettings):
         extra="ignore",
     )
 
-    uri: str = ""
+    driver: str = ""
     name: str = ""
     host: str | None = None
     port: int | None = None
@@ -48,15 +48,10 @@ class DatabaseSettings(BaseSettings):
 
     @property
     def url(self) -> str:
-        if "sqlite" in self.uri:
-            return self.uri.format(self.name)
-        return self.uri.format(
-            self.user,
-            self.password,
-            self.host,
-            self.port,
-            self.name,
-        )
+        if "sqlite" in self.driver:
+            return f"{self.driver}://{self.name}"
+
+        return f"{self.driver}://{self.user}:{self.password}@{self.host}:{self.port}"
 
 
 class ServerSettings(BaseSettings):

@@ -32,7 +32,7 @@ git clone git@github.com:hpphpro/litestar_api_example.git
 First of all rename your `.env.example` to `.env`
 ```
 
-DB_URI=postgresql+asyncpg://{}:{}@{}:{}/{}  # your db driver
+DB_DRIVER=postgresql+asyncpg  # your db driver
 DB_HOST=postgres # your host. If it running localy, set to localhost/127.0.0.1. If it running in a container, set a service/container_name
 DB_PORT=5432 # your port
 DB_USER=litestar # db user, you may want to override it
