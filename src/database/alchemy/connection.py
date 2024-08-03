@@ -152,7 +152,7 @@ class AlchemyAsyncSessionConnectionAdapter:
     def __await__(self) -> Generator[None, None, AbstractAsyncConnection]:
         return cast(
             Generator[None, None, AbstractAsyncConnection],
-            self,
+            self.start().__await__(),
         )
 
     def __getattr__(self, name: str) -> Any:
