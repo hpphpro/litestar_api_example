@@ -34,7 +34,7 @@ class Get(base.BaseQuery[User, User | None]):
 
         result = (await conn.scalars(stmt)).first()
 
-        return result if result else None
+        return result
 
 
 class Update(base.Update[User]):

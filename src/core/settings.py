@@ -51,7 +51,7 @@ class DatabaseSettings(BaseSettings):
         if "sqlite" in self.driver:
             return f"{self.driver}://{self.name}"
 
-        return f"{self.driver}://{self.user}:{self.password}@{self.host}:{self.port}"
+        return f"{self.driver}://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
 
 
 class ServerSettings(BaseSettings):
