@@ -45,7 +45,7 @@ class LogoutCommand(Command[dto.Token, dto.Status]):
             for pair in token_pairs:
                 _, _, cached_token = pair.partition("::")
                 if cached_token == token.token:
-                    await self._cache.pop(user.id.hex, pair)
+                    await self._cache.pop(user_id, pair)
                     break
             else:
                 raise UnAuthorizedError("Invalid token")

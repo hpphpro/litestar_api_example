@@ -65,6 +65,6 @@ class RefreshCommand(Command[dto.Fingerprint, tuple[datetime, dto.Token, dto.Tok
             expire, refresh = self._jwt.encode(typ="refresh", sub=user_id)
             _, access = self._jwt.encode(typ="access", sub=user_id)
 
-            await self._cache.set_list(str(user.id), f"{fingerprint}::{refresh.token}")
+            await self._cache.set_list(user_id, f"{fingerprint}::{refresh.token}")
 
             return expire, refresh, access
