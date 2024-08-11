@@ -22,7 +22,8 @@ src/
     services/ -> your business-logic
     __main__.py -> entry point
     defaults.py -> here is what you want to make before app starting
-     
+tests/
+    ... your tests
 ```
 ## Download
 ```
@@ -57,8 +58,8 @@ REDIS_HOST=redis # same as DB_HOST.
 CIPHER_ALGORITHM=RS256 # your algorithm. If you setting up HS256, then secret_key and private_key should be the same.
 # here is b64 .pem secret and public keys. You should override it by yourself
 # if you using RSA, then:
-# for private -> openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -outform PEM | base64
-# for public -> openssl rsa -in private.pem -pubout -outform PEM | base64
+# for private -> openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out private.pem && cat private.pem | base64
+# for public -> openssl rsa -in private.pem -pubout -out public.pem && cat public.pem | base64
 # store it in b64 IS IMPORTANT. It wont work other way, T_T
 # this key is 4098 bits.
 CIPHER_SECRET_KEY=...
