@@ -12,6 +12,5 @@ class WithUUIDMixin:
         primary_key=True,
         default=uuid.uuid4,
         server_default=text("gen_random_uuid()"),
-        index=True,
         nullable=False,
     )
