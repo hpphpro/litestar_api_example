@@ -80,6 +80,7 @@ class ServerSettings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8080
     type: Literal["granian", "uvicorn", "gunicorn"] = "granian"
+    workers: int | Literal["max"] = 1
     domain: str = "http://localhost:8080"
 
 

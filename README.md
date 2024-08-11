@@ -49,7 +49,8 @@ SERVER_CORS_HEADERS=["Authorization", "Accept", "Content-Type", "If-Modified-Sin
 SERVER_LOG_LEVEL=INFO # your logger level
 SERVER_DEBUG=1 # should litestar throw an exception to the terminal and request answer or not
 SERVER_TYPE=uvicorn # your server. uvicorn, gunicorn or granian may be used
-SERVER_TITLE=Litestar
+SERVER_TITLE=Litestar # remove this if you want to disable swagger
+SERVER_WORKERS=1 # set up workers for your server (only affect gunicorn/granian)
 
 REDIS_HOST=redis # same as DB_HOST.
 
