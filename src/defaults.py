@@ -8,7 +8,8 @@ from src.database.alchemy.queries.default import create_default_roles_if_not_exi
 async def main() -> None:
     settings = load_settings()
     engine = create_sa_engine(settings.db.url)
-    await create_default_roles_if_not_exists(engine)
+    async with engine.begin() as conn:
+        await create_default_roles_if_not_exists(conn)
 
 
 if __name__ == "__main__":

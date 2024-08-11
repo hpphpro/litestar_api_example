@@ -16,11 +16,17 @@ class UserService(Service):
     __slots__ = ()
 
     @overload
-    async def get_one(self, *_loads: user.LoadsType, id: uuid.UUID) -> dto.User: ...
+    async def get_one(
+        self, *_loads: user.LoadsType, lock: bool = False, id: uuid.UUID
+    ) -> dto.User: ...
     @overload
-    async def get_one(self, *_loads: user.LoadsType, login: str) -> dto.User: ...
-    async def get_one(self, *_loads: user.LoadsType, **kw: Any) -> dto.User:
-        user = await self._manager.send(queries.user.Get(*_loads, **kw))
+    async def get_one(
+        self, *_loads: user.LoadsType, lock: bool = False, login: str
+    ) -> dto.User: ...
+    async def get_one(
+        self, *_loads: user.LoadsType, lock: bool = False, **kw: Any
+    ) -> dto.User:
+        user = await self._manager.send(queries.user.Get(*_loads, lock=lock, **kw))
 
         if not user:
             raise NotFoundError("User not found", **kw)
@@ -33,14 +39,14 @@ class UserService(Service):
         order_by: OrderByType = "ASC",
         limit: int | None = None,
         offset: int | None = None,
-    ) -> list[dto.User]:
-        users = await self._manager.send(
+    ) -> tuple[int, list[dto.User]]:
+        total, users = await self._manager.send(
             queries.user.GetManyByOffset(
                 *_loads, order_by=order_by, offset=offset, limit=limit
             )
         )
 
-        return [dto.User.from_mapping(user.as_dict()) for user in users]
+        return total, [dto.User.from_mapping(user.as_dict()) for user in users]
 
     @on_error("login", detail="Creation failed")
     async def create(self, data: dto.UserCreate, hasher: AbstractHasher) -> dto.User:
@@ -62,9 +68,11 @@ class UserService(Service):
         if data.password and data.password != msgspec.UNSET:
             data.password = hasher.hash_password(data.password)
 
-        users = await self._manager.send(queries.user.Update(id=id, **data.to_dict()))
+        user = await self._manager.send(queries.user.Update(id=id, **data.to_dict()))
+        if not user:
+            raise NotFoundError("User to update not found", id=id)
 
-        return dto.User.from_mapping(users[-1].as_dict())
+        return dto.User.from_mapping(user.as_dict())
 
     @on_error(
         base_message="You cannot delete this user. {reason}",
@@ -84,7 +92,7 @@ class UserService(Service):
     @overload
     async def ensure_exists(self, *, login: str) -> Literal[True]: ...
     async def ensure_exists(self, **kw: Any) -> Literal[True]:
-        exists = await self._manager.send(queries.user.Exist(**kw))
+        exists = await self._manager.send(queries.user.Exists(**kw))
         if not exists:
             raise NotFoundError(message="User not found", **kw)
 

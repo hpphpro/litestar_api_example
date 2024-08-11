@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Generator, Protocol
+from typing import Any, Generator, Literal, Protocol
+
+IsolationLevel = Literal[
+    "SERIALIZABLE",
+    "REPEATABLE READ",
+    "READ COMMITTED",
+    "READ UNCOMMITTED",
+    "AUTOCOMMIT",
+]
 
 
 class AbstractAsyncTransaction(Protocol):
@@ -24,8 +32,12 @@ class AbstractAsyncConnection(Protocol):
     async def rollback(self) -> None: ...
     def in_transaction(self) -> bool: ...
     def in_nested_transaction(self) -> bool: ...
-    def begin(self) -> AbstractAsyncTransaction: ...
-    def begin_nested(self) -> AbstractAsyncTransaction: ...
+    async def begin(
+        self, isolation_level: IsolationLevel | None = None
+    ) -> AbstractAsyncTransaction: ...
+    async def begin_nested(
+        self, isolation_level: IsolationLevel | None = None
+    ) -> AbstractAsyncTransaction: ...
     @property
     def closed(self) -> bool: ...
     async def __aenter__(self) -> AbstractAsyncConnection: ...

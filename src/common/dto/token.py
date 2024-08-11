@@ -17,3 +17,9 @@ class TokenPayload(DTO):
     aud: str | None = None
     jti: str | None = None
     type: str | None = None
+
+
+class InternalToken(DTO):
+    access: Token
+    refresh: Token
+    refresh_expire: int

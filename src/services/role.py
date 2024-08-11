@@ -4,6 +4,7 @@ from typing import Any, overload
 from src.common import dto
 from src.common.exceptions import ConflictError, NotFoundError
 from src.database.alchemy import queries
+from src.database.alchemy.types import role
 from src.database.tools import on_error
 from src.services.base import Service
 
@@ -12,7 +13,7 @@ class RoleService(Service):
     __slots__ = ()
 
     @on_error("name", base_message="{reason} already exists")
-    async def create(self, name: str) -> dto.Role:
+    async def create(self, name: role.RoleType) -> dto.Role:
         role = await self._manager.send(queries.role.Create(name=name))
         if not role:
             raise ConflictError("This role already exists")
@@ -20,11 +21,17 @@ class RoleService(Service):
         return dto.Role.from_mapping(role.as_dict())
 
     @overload
-    async def get_one(self, *, name: str) -> dto.Role: ...
+    async def get_one(
+        self, *loads: role.RoleLoadsType, lock: bool = False, name: str
+    ) -> dto.Role: ...
     @overload
-    async def get_one(self, *, id: uuid.UUID) -> dto.Role: ...
-    async def get_one(self, **kw: Any) -> dto.Role:
-        role = await self._manager.send(queries.role.Get(**kw))
+    async def get_one(
+        self, *loads: role.RoleLoadsType, lock: bool = False, id: uuid.UUID
+    ) -> dto.Role: ...
+    async def get_one(
+        self, *loads: role.RoleLoadsType, lock: bool = False, **kw: Any
+    ) -> dto.Role:
+        role = await self._manager.send(queries.role.Get(*loads, lock=lock, **kw))
 
         if not role:
             raise NotFoundError("Role not found", **kw)

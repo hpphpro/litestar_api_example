@@ -31,7 +31,6 @@ def setup_common_dependencies(app: Litestar, settings: Settings) -> None:
     manager_factory = create_db_manager_factory(session_factory)
     hasher = get_argon2_hasher()
     jwt = JWTImpl(settings.cipher)
-    redis = get_redis(settings.redis)
     mediator = setup_command_mediator(
         manager=manager_factory,
         hasher=hasher,

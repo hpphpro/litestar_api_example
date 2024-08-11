@@ -1,3 +1,7 @@
-from src.database.alchemy.queries import role, user
+from src.database.alchemy.queries import base, role, user
 
-__all__ = ("user", "role")
+__all__ = (
+    "user",
+    "role",
+    "base",
+)

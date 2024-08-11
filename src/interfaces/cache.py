@@ -1,31 +1,31 @@
-from typing import Any, Callable, Protocol, TypeVar, runtime_checkable
+from datetime import timedelta
+from typing import Any, Protocol, TypeVar, runtime_checkable
 
 KeyT = TypeVar("KeyT", contravariant=True)
-RespT = TypeVar("RespT", contravariant=True)
+RespT = TypeVar("RespT")
 
 
 @runtime_checkable
 class Cache(Protocol[KeyT, RespT]):
     async def get_value(
-        self, key: KeyT, convert_to: Any | Callable[[Any], RespT] | None = None
-    ) -> RespT | Any: ...
+        self,
+        key: KeyT,
+    ) -> RespT | None: ...
     async def set_value(
-        self, key: KeyT, value: RespT | Any, expire: int | None = None, **kw: Any
+        self, key: KeyT, value: Any, expire: int | timedelta | None = None, **kw: Any
     ) -> None: ...
-    async def del_keys(self, *keys: RespT) -> None: ...
+    async def del_keys(self, *keys: KeyT) -> None: ...
     async def get_list(
         self,
         key: KeyT,
-        convert_to: Any | Callable[[Any], list[RespT]] | None = None,
-    ) -> list[RespT] | list[Any]: ...
+    ) -> list[RespT]: ...
     async def set_list(
-        self, key: KeyT, *values: RespT | Any, expire: int | None = None, **kw: Any
+        self, key: KeyT, *values: Any, expire: int | timedelta | None = None, **kw: Any
     ) -> None: ...
     async def pop(
         self,
         key: KeyT,
-        value: RespT | Any,
-        convert_to: Any | Callable[[Any], RespT] | None = None,
+        value: Any,
         **kw: Any,
-    ) -> RespT | Any | None: ...
+    ) -> bool: ...
     async def close(self) -> None: ...

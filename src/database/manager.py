@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import asyncio
 from types import TracebackType
 from typing import Any, Callable
 
 from src.interfaces.command import Query, R
-from src.interfaces.connection import AbstractAsyncConnection, AbstractAsyncTransaction
+from src.interfaces.connection import (
+    AbstractAsyncConnection,
+    AbstractAsyncTransaction,
+    IsolationLevel,
+)
 
 
 class TransactionManager:
@@ -17,8 +22,10 @@ class TransactionManager:
         self.conn = conn
         self._transaction: AbstractAsyncTransaction | None = None
 
-    async def send(self, query: Query[Any, R], **kw: Any) -> R:
+    async def send(self, query: Query[Any, R], /, **kw: Any) -> R:
         return await query(self.conn, **kw)
+
+    __call__ = send
 
     async def __aexit__(
         self,
@@ -44,15 +51,14 @@ class TransactionManager:
     async def rollback(self) -> None:
         await self.conn.rollback()
 
-    async def create_transaction(self) -> None:
+    async def create_transaction(
+        self, isolation_level: IsolationLevel | None = None
+    ) -> None:
         if not self.conn.in_transaction() and not self.conn.closed:
-            self._transaction = await self.conn.begin()
+            self._transaction = await self.conn.begin(isolation_level=isolation_level)
 
     async def close_transaction(self) -> None:
-        if not self.conn.closed:
-            await self.conn.close()
-
-    __call__ = send
+        await asyncio.shield(asyncio.create_task(self.conn.close()))
 
 
 def create_db_manager_factory(

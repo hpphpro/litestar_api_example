@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any, Protocol, overload, runtime_checkable
 
 from src.api.v1.commands import auth, user
@@ -16,11 +15,11 @@ class CommandMediatorProtocol(Protocol):
     @overload
     def send(
         self, query: dto.Fingerprint, *, token: str
-    ) -> AwaitableProxy[auth.RefreshCommand, tuple[datetime, dto.Token, dto.Token]]: ...
+    ) -> AwaitableProxy[auth.RefreshCommand, dto.InternalToken]: ...
     @overload
     def send(
         self, query: dto.UserLogin
-    ) -> AwaitableProxy[auth.LoginCommand, tuple[datetime, dto.Token, dto.Token]]: ...
+    ) -> AwaitableProxy[auth.LoginCommand, dto.InternalToken]: ...
     @overload
     def send(
         self, query: user.DeleteUserById
@@ -32,7 +31,7 @@ class CommandMediatorProtocol(Protocol):
     @overload
     def send(
         self, query: user.GetManyUsersByOffset
-    ) -> AwaitableProxy[user.GetManyUsersByOffsetCommand, list[dto.User]]: ...
+    ) -> AwaitableProxy[user.GetManyUsersByOffsetCommand, tuple[int, list[dto.User]]]: ...
     @overload
     def send(
         self, query: dto.UserCreate

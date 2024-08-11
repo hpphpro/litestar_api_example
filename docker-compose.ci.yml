@@ -1,0 +1,62 @@
+
+services:
+  tests:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    container_name: tests
+    networks:
+      - test
+    environment:
+      - MOCK_DB_HOST=postgres
+      - MOCK_DB_PORT=5432
+      - MOCK_DB_NAME=test
+      - MOCK_DB_USER=test
+      - MOCK_DB_PASSWORD=test
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env.test
+    command: /bin/sh -c '/wait.sh postgres:5432 && pytest tests'
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=test
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - MAX_CONNECTIONS=500
+    networks:
+      - test
+    command: postgres -c 'max_connections=500'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  redis:
+    image: redis:latest
+    restart: always
+    container_name: redis
+    networks:
+      - test
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+    name: test_postgres_data
+  
+networks:
+  test:
+    driver: bridge
+    name: test

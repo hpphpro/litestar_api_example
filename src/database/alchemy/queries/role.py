@@ -7,30 +7,34 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.alchemy.entity.associated import UserRole
 from src.database.alchemy.entity.role import Role
 from src.database.alchemy.queries import base
+from src.database.alchemy.types import role
 
 
 class Create(base.Create[Role]):
-    entity: type[Role] = Role
     __slots__ = ()
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: role.RoleType) -> None:
         super().__init__(name=name)
 
 
 class Get(base.Get[Role]):
-    entity: type[Role] = Role
     __slots__ = ()
 
     @overload
-    def __init__(self, *, id: uuid.UUID) -> None: ...
+    def __init__(
+        self, *loads: role.RoleLoadsType, lock: bool = False, id: uuid.UUID
+    ) -> None: ...
     @overload
-    def __init__(self, *, name: str) -> None: ...
-    def __init__(self, **kw: Any) -> None:
-        super().__init__(**kw)
+    def __init__(
+        self, *loads: role.RoleLoadsType, lock: bool = False, name: role.RoleType
+    ) -> None: ...
+    def __init__(
+        self, *loads: role.RoleLoadsType, lock: bool = False, **kw: Any
+    ) -> None:
+        super().__init__(*loads, lock_for_update=lock, **kw)
 
 
 class SetToUser(base.Create[UserRole]):
-    entity: type[UserRole] = UserRole
     __slots__ = ()
 
     def __init__(self, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
@@ -38,7 +42,6 @@ class SetToUser(base.Create[UserRole]):
 
 
 class ChangeUserRole(base.BaseQuery[UserRole, int]):
-    entity: type[UserRole] = UserRole
     __slots__ = ()
 
     def __init__(

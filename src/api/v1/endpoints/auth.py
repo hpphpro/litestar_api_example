@@ -1,5 +1,3 @@
-import math
-from datetime import datetime, timezone
 from typing import Annotated
 
 from litestar import (
@@ -13,8 +11,6 @@ from litestar import (
 from litestar.datastructures.cookie import Cookie
 from litestar.datastructures.state import State
 from litestar.middleware.rate_limit import RateLimitConfig
-from litestar.openapi.datastructures import ResponseSpec
-from litestar.openapi.spec import Example
 from litestar.params import Body
 
 from src.api.common.docs import TooManyRequests, UnAuthorized
@@ -29,25 +25,7 @@ class AuthController(Controller):
     @post(
         "/login",
         status_code=status_codes.HTTP_200_OK,
-        responses={
-            status_codes.HTTP_401_UNAUTHORIZED: ResponseSpec(
-                UnAuthorized,
-                description="Unauthorized",
-                examples=[
-                    Example(summary="Unauthorized", value={"message": "Unauthorized"})
-                ],
-            ),
-            status_codes.HTTP_429_TOO_MANY_REQUESTS: ResponseSpec(
-                TooManyRequests,
-                description="Too many requests",
-                examples=[
-                    Example(
-                        summary="Too many requests",
-                        value={"message": "Too many requests"},
-                    )
-                ],
-            ),
-        },
+        responses=UnAuthorized.to_spec() | TooManyRequests.to_spec(),
         exclude_from_auth=True,
         middleware=[RateLimitConfig(rate_limit=("minute", 5)).middleware],
     )
@@ -61,20 +39,18 @@ class AuthController(Controller):
         ],
         mediator: CommandMediatorProtocol,
     ) -> Response[dto.Token]:
-        expire, refresh, access = await mediator.send(data)
+        internal = await mediator.send(data)
 
         return Response(
-            content=access,
+            content=internal.access,
             media_type=MediaType.JSON,
             status_code=status_codes.HTTP_200_OK,
             cookies=[
                 Cookie(
                     "refresh",
-                    value=refresh.token,
+                    value=internal.refresh.token,
                     httponly=True,
-                    max_age=math.ceil(
-                        (expire - datetime.now(timezone.utc)).total_seconds()
-                    ),
+                    max_age=internal.refresh_expire,
                     secure=True,
                     samesite="lax",
                 )
@@ -85,15 +61,7 @@ class AuthController(Controller):
         "/refresh",
         status_code=status_codes.HTTP_200_OK,
         security=[{"BearerToken": []}],
-        responses={
-            status_codes.HTTP_401_UNAUTHORIZED: ResponseSpec(
-                UnAuthorized,
-                description="Unauthorized",
-                examples=[
-                    Example(summary="Unauthorized", value={"message": "Unauthorized"})
-                ],
-            )
-        },
+        responses=UnAuthorized.to_spec(),
         exclude_from_auth=True,
     )
     async def refresh_endpoint(
@@ -108,20 +76,18 @@ class AuthController(Controller):
         mediator: CommandMediatorProtocol,
     ) -> Response[dto.Token]:
         token = request.cookies.get("refresh", "")
-        expire, refresh, access = await mediator.send(data, token=token)
+        internal = await mediator.send(data, token=token)
 
         return Response(
-            content=access,
+            content=internal.access,
             media_type=MediaType.JSON,
             status_code=status_codes.HTTP_200_OK,
             cookies=[
                 Cookie(
                     "refresh",
-                    value=refresh.token,
+                    value=internal.refresh.token,
                     httponly=True,
-                    max_age=math.ceil(
-                        (expire - datetime.now(timezone.utc)).total_seconds()
-                    ),
+                    max_age=internal.refresh_expire,
                     secure=True,
                     samesite="lax",
                 )
@@ -132,15 +98,7 @@ class AuthController(Controller):
         "/logout",
         status_code=status_codes.HTTP_200_OK,
         security=[{"BearerToken": []}],
-        responses={
-            status_codes.HTTP_401_UNAUTHORIZED: ResponseSpec(
-                UnAuthorized,
-                description="Unauthorized",
-                examples=[
-                    Example(summary="Unauthorized", value={"message": "Unauthorized"})
-                ],
-            )
-        },
+        responses=UnAuthorized.to_spec(),
         exclude_from_auth=True,
     )
     async def logout_endpoint(

@@ -13,8 +13,8 @@ from litestar import (
 )
 from litestar.datastructures.state import State
 from litestar.middleware.rate_limit import RateLimitConfig
-from litestar.openapi.datastructures import ResponseSpec
 from litestar.openapi.spec import Example
+from litestar.pagination import OffsetPagination
 from litestar.params import Body, Parameter
 
 from src.api.common.constants import MAX_PAGINATION_LIMIT, MIN_PAGINATION_LIMIT
@@ -35,33 +35,12 @@ from src.database.tools import page_to_offset
 
 class UserController(Controller):
     path = "/users"
-    tags = ["users"]
+    tags = ["user"]
 
     @post(
         status_code=status_codes.HTTP_201_CREATED,
         media_type=MediaType.JSON,
-        responses={
-            status_codes.HTTP_409_CONFLICT: ResponseSpec(
-                Conflict,
-                description="User already exists",
-                examples=[
-                    Example(
-                        summary="User already exists",
-                        value={"message": "User already exists"},
-                    )
-                ],
-            ),
-            status_codes.HTTP_429_TOO_MANY_REQUESTS: ResponseSpec(
-                TooManyRequests,
-                description="Too many requests",
-                examples=[
-                    Example(
-                        summary="Too many requests",
-                        value={"message": "Too many requests"},
-                    )
-                ],
-            ),
-        },
+        responses=Conflict.to_spec() | TooManyRequests.to_spec(),
         exclude_from_auth=True,
         middleware=[RateLimitConfig(rate_limit=("minute", 5)).middleware],
     )
@@ -89,15 +68,11 @@ class UserController(Controller):
         self,
         mediator: CommandMediatorProtocol,
         s: Annotated[
-            list[user_types.LoadsType] | None,
+            tuple[user_types.LoadsType, ...],
             Parameter(
                 required=False,
-                default=None,
+                default=(),
                 description="Search for additional user relation",
-                examples=[
-                    Example(value=value, summary=value)
-                    for value in get_args(user_types.LoadsType)
-                ],
             ),
         ],
         page: Annotated[
@@ -116,8 +91,8 @@ class UserController(Controller):
         order_by: Annotated[
             OrderByType, Parameter(default="ASC", required=False, title="Item ordering")
         ],
-    ) -> list[dto.User]:
-        return await mediator.send(
+    ) -> OffsetPagination[dto.User]:
+        total, items = await mediator.send(
             GetManyUsersByOffset(
                 order_by=order_by,
                 offset=page_to_offset(page, limit),
@@ -126,22 +101,16 @@ class UserController(Controller):
             )
         )
 
+        return OffsetPagination[dto.User](
+            items=items, total=total, limit=limit, offset=limit * page
+        )
+
     @get(
         "/me",
         status_code=status_codes.HTTP_200_OK,
         media_type=MediaType.JSON,
         security=[{"BearerToken": []}],
-        responses={
-            status_codes.HTTP_404_NOT_FOUND: ResponseSpec(
-                NotFound,
-                description="Not found",
-                examples=[
-                    Example(
-                        summary="User not found", value={"message": "User not found"}
-                    )
-                ],
-            )
-        },
+        responses=NotFound.to_spec(),
     )
     async def get_me_endpoint(
         self,
@@ -155,17 +124,7 @@ class UserController(Controller):
         status_code=status_codes.HTTP_200_OK,
         media_type=MediaType.JSON,
         security=[{"BearerToken": []}],
-        responses={
-            status_codes.HTTP_404_NOT_FOUND: ResponseSpec(
-                NotFound,
-                description="Not found",
-                examples=[
-                    Example(
-                        summary="User not found", value={"message": "User not found"}
-                    )
-                ],
-            )
-        },
+        responses=NotFound.to_spec(),
     )
     async def get_user_by_id_endpoint(
         self,
@@ -192,27 +151,7 @@ class UserController(Controller):
         media_type=MediaType.JSON,
         security=[{"BearerToken": []}],
         guards=[Permission("ADMIN", same_user=True)],
-        responses={
-            status_codes.HTTP_409_CONFLICT: ResponseSpec(
-                Conflict,
-                description="Conflict Update",
-                examples=[
-                    Example(
-                        summary="Conflict Update",
-                        value={"message": "already in use"},
-                    )
-                ],
-            ),
-            status_codes.HTTP_404_NOT_FOUND: ResponseSpec(
-                NotFound,
-                description="Not found",
-                examples=[
-                    Example(
-                        summary="User not found", value={"message": "User not found"}
-                    )
-                ],
-            ),
-        },
+        responses=Conflict.to_spec() | NotFound.to_spec(),
     )
     async def update_user_by_id_endpoint(
         self,
@@ -233,17 +172,7 @@ class UserController(Controller):
         media_type=MediaType.JSON,
         security=[{"BearerToken": []}],
         guards=[Permission("ADMIN", same_user=True)],
-        responses={
-            status_codes.HTTP_404_NOT_FOUND: ResponseSpec(
-                NotFound,
-                description="Not found",
-                examples=[
-                    Example(
-                        summary="User not found", value={"message": "User not found"}
-                    )
-                ],
-            ),
-        },
+        responses=NotFound.to_spec(),
     )
     async def delete_user_by_id_endpoint(
         self,

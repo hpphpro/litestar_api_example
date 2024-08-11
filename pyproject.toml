@@ -29,3 +29,9 @@ select = [
   "UP",
 ]
 
+[tool.pytest.ini_options]
+filterwarnings = 'ignore::DeprecationWarning'
+python_files = "test_*.py"
+pythonpath = "./"
+xfail_strict = true
+log_level = "DEBUG"

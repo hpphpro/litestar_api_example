@@ -34,7 +34,9 @@ class GetManyUsersByOffset(dto.DTO):
     s: Sequence[LoadsType] = field(default_factory=list)
 
 
-class GetManyUsersByOffsetCommand(Command[GetManyUsersByOffset, list[dto.User]]):
+class GetManyUsersByOffsetCommand(
+    Command[GetManyUsersByOffset, tuple[int, list[dto.User]]]
+):
     __slots__ = ("_manager",)
 
     def __init__(self, manager: AbstractTransactionManager) -> None:
@@ -42,7 +44,7 @@ class GetManyUsersByOffsetCommand(Command[GetManyUsersByOffset, list[dto.User]])
 
     async def execute(
         self, query: GetManyUsersByOffset, /, **kwargs: Any
-    ) -> list[dto.User]:
+    ) -> tuple[int, list[dto.User]]:
         async with self._manager:
             return await UserService(self._manager).get_many(
                 *query.s, **query.to_dict(exclude={"s"})

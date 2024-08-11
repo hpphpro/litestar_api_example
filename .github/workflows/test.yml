@@ -1,0 +1,50 @@
+name: CI Pipeline
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs: 
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+            path: ~/.cache/pip
+            key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+            restore-keys: |
+                ${{ runner.os }}-pip-
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.4'
+      - name: Install Dependencies
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y docker-compose
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+            path: /tmp/.buildx-cache
+            key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+            restore-keys: |
+                ${{ runner.os }}-docker-
+      - name: Set up and Run
+        run: |
+          docker-compose -f docker-compose.ci.yml up -d --build
+          docker-compose -f docker-compose.ci.yml logs -f tests || true
+
+          TEST_EXIT_CODE=$(docker-compose -f docker-compose.ci.yml ps -q tests | xargs docker inspect -f '{{ .State.ExitCode }}')
+
+          docker-compose -f docker-compose.ci.yml down
+
+          if [ "$TEST_EXIT_CODE" -ne 0 ]; then
+            exit $TEST_EXIT_CODE
+          fi
+        

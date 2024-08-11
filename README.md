@@ -72,11 +72,32 @@ pip install -r requirements.txt
 ```
 `Create db and tables. By default db is postgres.`
 
-__Project already include initial midgration. If you want to create your own or add a new one:__
+__Project already include initial migration. If you want to create your own or add a new one:__
 ```
 alembic revision --autogenerate -m 'initial' && alembic upgrade head
 ```
+## TESTS
+To run tests, use following command:
+```
+docker-compose -f docker-compose.ci.yml up --build
+```
+Or set your local MOCK_DB settings to .env and run:
+```
+pytest tests
+```
+`For UNIX`:
+
+__local__:
+```
+make run_test_local
+```
+__docker__:
+```
+make run_test_docker
+```
+
 `Start app:`
+
 
 for Windows:
 ```
@@ -97,6 +118,6 @@ make docker_up
 ```
 ## Windows:
 ```
-docker-compose up -d --build
+docker-compose -f docker-compose.prod.yml up -d --build
 ```
 

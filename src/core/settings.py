@@ -45,6 +45,7 @@ class DatabaseSettings(BaseSettings):
     connection_pool_size: int = 10
     connection_max_overflow: int = 90
     connection_pool_pre_ping: bool = True
+    max_connections: int = 100  # postgres default
 
     @property
     def url(self) -> str:

@@ -6,3 +6,7 @@ class Service:
 
     def __init__(self, manager: AbstractTransactionManager) -> None:
         self._manager = manager
+
+    @property
+    def manager(self) -> AbstractTransactionManager:
+        return self._manager
